@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+# file: daily_notices.rb
+
+require 'activity-logger'
+
+class DailyNotices < ActivityLogger
+
+  def initialize()
+    super()
+  end
+
+end

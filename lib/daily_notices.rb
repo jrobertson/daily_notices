@@ -46,6 +46,7 @@ class DailyNotices
       @rss.description = 'Generated using the daily_notices gem'      
       @rss.link = @url_base
     end    
+    
   end
   
   def create(description, time=Time.now, title: nil, \
@@ -58,7 +59,8 @@ class DailyNotices
     
     # Add it to the RSS document
     title ||= description.split(/\n/,2).first[0..140]
-    link = File.join(@url_base, @archive_path, '#' + id)
+    link = [File.join(@url_base, File.basename(@filepath), \
+                                            @archive_path, '#' + id)].join('/')
     @rss.add title: title, link: link, description: description
     @rss.save @rssfile
 

@@ -68,5 +68,29 @@ class DailyNotices
   end
   
   alias add create
-
+  
+  def title()
+    @rss.title
+  end
+  
+  def title=(val)
+    @rss.title = val
+  end
+  
+  def link()
+    @rss.link
+  end
+  
+  def link=(val)
+    @rss.link = val
+  end
+  
+  def description()
+    @rss.description
+  end
+  
+  def description=(val)
+    @rss.description = val
+  end
+  
 end

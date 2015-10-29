@@ -24,12 +24,15 @@ class DailyNotices
     @indexpath = File.join(@filepath, @archive_path, 'index.xml')
     FileUtils.mkdir_p File.dirname(@indexpath)
     
+    @schema = 'items/item(description, time, uid)'
+    @default_key = 'uid'
+        
     if File.exists? @indexpath then
       @dx = Dynarex.new @indexpath
     else
-      @dx = Dynarex.new 'items/item(description, time)'
+      @dx = Dynarex.new @schema
       @dx.order = 'descending'
-      @dx.default_key = 'uid'
+      @dx.default_key = @default_key
       @dx.xslt = @dx_xslt
     end
     
@@ -50,9 +53,9 @@ class DailyNotices
   end
   
   def create(description, time=Time.now, title: nil, \
-                                id: Time.now.strftime('%H%M%S'))
+                                uid: Time.now.strftime('%H%M%S'))
 
-    @dx.create description: description, time: time, id: id   
+    @dx.create description: description, time: time, uid: uid   
     @dx.save @indexpath
     File.write  File.join(@filepath, @archive_path, 'index.html'), \
                                                   @dx.to_html(domain: @url_base)
@@ -60,7 +63,7 @@ class DailyNotices
     # Add it to the RSS document
     title ||= description.split(/\n/,2).first[0..140]
     link = [File.join(@url_base, File.basename(@filepath), \
-                                            @archive_path, '#' + id)].join('/')
+                                            @archive_path, '#' + uid)].join('/')
     @rss.add title: title, link: link, description: description
     @rss.save @rssfile
 

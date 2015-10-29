@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'daily_notices'
-  s.version = '0.2.3'
+  s.version = '0.2.4'
   s.summary = 'A public facing noticeboard which is centered around an RSS feed.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/daily_notices.rb']

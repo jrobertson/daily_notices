@@ -38,9 +38,9 @@ class DailyNotices
     @rssfile = File.join(@filepath, 'rss.xml')
     
     if File.exists? @rssfile then
-      @rss = RSScreator.new @rssfile
+      @rss = RSScreator.new @rssfile, dx_xslt: @dx_xslt
     else
-      @rss = RSScreator.new
+      @rss = RSScreator.new dx_xslt: @dx_xslt
       @rss.xslt = @rss_xslt
       @rss.title = 'Daily notices'
       @rss.description = 'Generated using the daily_notices gem'      

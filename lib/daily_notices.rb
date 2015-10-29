@@ -24,7 +24,7 @@ class DailyNotices
     @indexpath = File.join(@filepath, @archive_path, 'index.xml')
     FileUtils.mkdir_p File.dirname(@indexpath)
     
-    @schema = 'items/item(description, time, uid)'
+    @schema = 'items/item(description, time)'
     @default_key = 'uid'
         
     if File.exists? @indexpath then
@@ -53,9 +53,9 @@ class DailyNotices
   end
   
   def create(description, time=Time.now, title: nil, \
-                                uid: Time.now.strftime('%H%M%S'))
+                                id: Time.now.strftime('%H%M%S'))
 
-    @dx.create description: description, time: time, uid: uid   
+    @dx.create({description: description, time: time}, id: id)
     @dx.save @indexpath
     File.write  File.join(@filepath, @archive_path, 'index.html'), \
                                                   @dx.to_html(domain: @url_base)
@@ -63,8 +63,8 @@ class DailyNotices
     # Add it to the RSS document
     title ||= description.split(/\n/,2).first[0..140]
     link = [File.join(@url_base, File.basename(@filepath), \
-                                            @archive_path, '#' + uid)].join('/')
-    @rss.add title: title, link: link, description: description
+                                            @archive_path, '#' + id)].join('/')
+    @rss.add( {title: title, link: link, description: description}, id: id)
     @rss.save @rssfile
 
 

@@ -65,7 +65,7 @@ class DailyNotices
                                                     @dx.to_html(domain: @url_base)
     else
 
-      target_path = File.join(@filepath, @archive_path, id, 'index.html')
+      target_path = File.join(@filepath, @archive_path, '#' + id, 'index.html')
       FileUtils.mkdir_p File.dirname(target_path)
       rx = @dx.find(id)
       

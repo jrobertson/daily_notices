@@ -23,7 +23,7 @@ class DailyNotices
     @default_key ||= 'uid'
     
     if dx_xslt.nil? then
-      
+
       subdir = File.basename filepath
       dir = url_base[/http:\/\/[^\/]+\/(.*)/,1]
 
@@ -34,6 +34,19 @@ class DailyNotices
       
       @dx_xslt = dxxsltfilepath
     end
+    
+    if rss_xslt.nil? then
+
+      subdir = File.basename filepath
+      dir = url_base[/http:\/\/[^\/]+\/(.*)/,1]
+
+      rssxsltfilename = "rssx#{Time.now.to_i.to_s}.xsl"
+      rssxsltfilepath = '/' + [dir, subdir, rssxsltfilename].join('/')      
+      File.write File.join(filepath, rssxsltfilename), \
+                                             RssSliml.new().to_xslt
+      
+      @rss_xslt = rssxsltfilepath
+    end    
     
     @day = Time.now.day
     new_day()

@@ -3,6 +3,7 @@
 # file: daily_notices.rb
 
 
+require 'dx_sliml'
 require 'rss_creator'
 require 'fileutils'
 
@@ -20,6 +21,19 @@ class DailyNotices
     
     @schema ||= 'items/item(description, time)'
     @default_key ||= 'uid'
+    
+    if dx_xslt.nil? then
+      
+      subdir = File.basename filepath
+      dir = url_base[/http:\/\/[^\/]+\/(.*)/,1]
+
+      dxxsltfilename = "dx#{Time.now.to_i.to_s}.xsl"
+      dxxsltfilepath = '/' + [dir, subdir, dxxsltfilename].join('/')      
+      File.write File.join(filepath, dxxsltfilename), \
+                                             DxSliml.new(dx: @schema).to_xslt
+      
+      @dx_xslt = dxxsltfilepath
+    end
     
     @day = Time.now.day
     new_day()
@@ -65,7 +79,7 @@ class DailyNotices
                                                     @dx.to_html(domain: @url_base)
     else
 
-      target_path = File.join(@filepath, @archive_path, '#' + id, 'index.html')
+      target_path = File.join(@filepath, @archive_path, id, 'index.html')
       FileUtils.mkdir_p File.dirname(target_path)
       rx = @dx.find(id)
       
@@ -82,8 +96,8 @@ class DailyNotices
     
     # Add it to the RSS document
     title ||= description.split(/\n/,2).first[0..140]
-    link = [File.join(@url_base, File.basename(@filepath), \
-                                            @archive_path, id)].join('/')
+    link = create_link(id)
+    
     @rss.add( {title: title, link: link, description: description}, id: id)
     @rss.save @rssfile
     
@@ -124,9 +138,14 @@ class DailyNotices
     
     yield(xmlpath, id) if block_given?
     
-  end
+  end  
   
   private 
+  
+  def create_link(id)
+    [File.join(@url_base, File.basename(@filepath), \
+                                            @archive_path, '#' + id)].join('/')
+  end
   
   # configures the target page (using a Dynarex document) for a new day
   #

@@ -56,9 +56,9 @@ class DailyNotices
     @rssfile = File.join(@filepath, 'rss.xml')
     
     if File.exists? @rssfile then
-      @rss = RSScreator.new @rssfile, dx_xslt: @dx_xslt
+      @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt
     else
-      @rss = RSScreator.new dx_xslt: @dx_xslt
+      @rss = RSScreator.new dx_xslt: @rss_xslt
       @rss.xslt = @rss_xslt
       @rss.title = 'Daily notices'
       @rss.description = 'Generated using the daily_notices gem'      
@@ -106,7 +106,7 @@ class DailyNotices
       File.write target_path.sub(/\.html$/,'.xml', ), rxdoc.xml(pretty: true)
       File.write  target_path, rx.to_html(xslt: @target_xslt)
     end
-    
+
     # Add it to the RSS document
     title ||= description.split(/\n/,2).first[0..140]
     link = create_link(id)

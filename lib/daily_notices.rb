@@ -63,7 +63,7 @@ class DailyNotices
       @rss = RSScreator.new dx_xslt: @rss_xslt
       @rss.xslt = @rss_xslt
       @rss.title = @title
-      @rss.description = 'Generated using the daily_notices gem'      
+      @rss.description = 'Generated using the daily_notices gem'
       @rss.link = @url_base
     end    
     
@@ -156,6 +156,10 @@ class DailyNotices
     yield(xmlpath, id) if block_given?
     
   end  
+  
+  def save()
+    @rss.save @rssfile    
+  end
   
   private 
   

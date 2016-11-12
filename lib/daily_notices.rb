@@ -19,7 +19,7 @@ class DailyNotices
                 filepath, url_base, dx_xslt, rss_xslt, target_page, target_xslt
 
     
-    @schema ||= 'items/item(description, time)'
+    @schema ||= 'items[title]/item(description, time)'
     @default_key ||= 'uid'
     
     if dx_xslt.nil? then
@@ -49,7 +49,7 @@ class DailyNotices
     end    
     
     @day = Time.now.day
-    new_day()
+    new_day(title = 'Daily notices')
     
     # open the Dynarex file or create a new Dynarex file
 
@@ -60,7 +60,7 @@ class DailyNotices
     else
       @rss = RSScreator.new dx_xslt: @rss_xslt
       @rss.xslt = @rss_xslt
-      @rss.title = 'Daily notices'
+      @rss.title = title
       @rss.description = 'Generated using the daily_notices gem'      
       @rss.link = @url_base
     end    
@@ -69,8 +69,8 @@ class DailyNotices
     @target_page = target_page
   end
   
-  def create(x, time=Time.now, title: nil, \
-                     id: Time.now.strftime('%H%M%S'), description: nil)
+  def create(x, time=Time.now.strftime('%H:%M %p - %d %b %Y'), title: nil, \
+                                      id: Time.now.to_i.to_s, description: nil)
 
     new_day() if @day != Time.now.day
         
@@ -89,22 +89,24 @@ class DailyNotices
     
     if @target_page == :recordset then
       File.write  File.join(@filepath, @archive_path, 'index.html'), \
-                                                    @dx.to_html(domain: @url_base)
+                                                 @dx.to_html(domain: @url_base)
     else
 
       target_path = File.join(@filepath, @archive_path, id, 'index.html')
       FileUtils.mkdir_p File.dirname(target_path)
+
       rx = @dx.find(id)
-      
+
       kvx = rx.to_kvx
       yield kvx if block_given? 
-      
+
       rxdoc = Rexle.new(kvx.to_xml)
       rxdoc.instructions  << ['xml-stylsheet',\
           "title='XSL_formatting' type='text/xsl' href='#{@target_xslt}'"]
-      
+
       File.write target_path.sub(/\.html$/,'.xml', ), rxdoc.xml(pretty: true)
       File.write  target_path, rx.to_html(xslt: @target_xslt)
+
     end
 
     # Add it to the RSS document
@@ -162,7 +164,7 @@ class DailyNotices
   
   # configures the target page (using a Dynarex document) for a new day
   #
-  def new_day()
+  def new_day(title)
     
     @archive_path = Time.now.strftime("%Y/%b/%d").downcase
     
@@ -177,6 +179,7 @@ class DailyNotices
       @dx.order = 'descending'
       @dx.default_key = @default_key
       @dx.xslt = @dx_xslt
+      @dx.title = title
     end    
     
   end

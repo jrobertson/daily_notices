@@ -12,14 +12,15 @@ class DailyNotices
   
   attr_accessor :title, :description, :link, :dx_xslt, :rss_xslt
 
-  def initialize(filepath='', url_base: 'http:/127.0.0.1/', \
+  def initialize(filepath='', url_base: 'http:/127.0.0.1/', identifier: '', \
            dx_xslt: '', rss_xslt: '', target_page: :recordset, target_xslt: '')
     
-    @filepath, @url_base, @dx_xslt, @rss_xslt, @target_page, @target_xslt = \
-                filepath, url_base, dx_xslt, rss_xslt, target_page, target_xslt
+    @filepath, @url_base, @dx_xslt, @rss_xslt, @target_page, @target_xslt,  \
+          @identifier = filepath, url_base, dx_xslt, rss_xslt, target_page, \
+          target_xslt, identifier
 
     
-    @schema ||= 'items[title]/item(description, time)'
+    @schema ||= 'items[title, identifier]/item(description, time)'
     @default_key ||= 'uid'
     
     if dx_xslt.nil? then
@@ -49,7 +50,8 @@ class DailyNotices
     end    
     
     @day = Time.now.day
-    new_day(title = 'Daily notices')
+    @title = @identifier.capitalize + ' daily notices'
+    new_day()
     
     # open the Dynarex file or create a new Dynarex file
 
@@ -60,7 +62,7 @@ class DailyNotices
     else
       @rss = RSScreator.new dx_xslt: @rss_xslt
       @rss.xslt = @rss_xslt
-      @rss.title = title
+      @rss.title = @title
       @rss.description = 'Generated using the daily_notices gem'      
       @rss.link = @url_base
     end    
@@ -164,7 +166,7 @@ class DailyNotices
   
   # configures the target page (using a Dynarex document) for a new day
   #
-  def new_day(title)
+  def new_day()
     
     @archive_path = Time.now.strftime("%Y/%b/%d").downcase
     
@@ -179,7 +181,8 @@ class DailyNotices
       @dx.order = 'descending'
       @dx.default_key = @default_key
       @dx.xslt = @dx_xslt
-      @dx.title = title
+      @dx.title = @title
+      @dx.identifier = @identifier
     end    
     
   end

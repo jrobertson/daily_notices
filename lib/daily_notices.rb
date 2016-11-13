@@ -4,8 +4,10 @@
 
 
 require 'dx_sliml'
-require 'rss_creator'
+require 'rx_sliml'
 require 'fileutils'
+require 'rss_creator'
+
 
 
 class DailyNotices
@@ -105,8 +107,13 @@ class DailyNotices
       rxdoc = Rexle.new(kvx.to_xml)
       rxdoc.instructions  << ['xml-stylsheet',\
           "title='XSL_formatting' type='text/xsl' href='#{@target_xslt}'"]
-
       File.write target_path.sub(/\.html$/,'.xml', ), rxdoc.xml(pretty: true)
+      
+      unless File.exists? @target_xslt then
+        File.write @target_xslt, 
+            RxSliml.new(fields: %i(description time)).to_xslt 
+      end
+      
       File.write  target_path, rx.to_html(xslt: @target_xslt)
 
     end
@@ -164,8 +171,7 @@ class DailyNotices
   private 
   
   def create_link(id)
-    [File.join(@url_base, File.basename(@filepath), \
-                                            @archive_path, '#' + id)].join('/')
+    [File.join(@url_base, File.basename(@filepath), 'status', id)].join('/')
   end
   
   # configures the target page (using a Dynarex document) for a new day

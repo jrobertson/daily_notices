@@ -58,13 +58,14 @@ class DailyNotices
     # open the Dynarex file or create a new Dynarex file
 
     @rssfile = File.join(@filepath, 'rss.xml')
-    
+
     if File.exists? @rssfile then
       @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt
     else
-      @rss = RSScreator.new dx_xslt: @rss_xslt
+
+      @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt
       @rss.xslt = @rss_xslt
-      @rss.title = @title
+      @rss.title = @title || identifier.capitalize + ' daily notices'
       @rss.description = 'Generated using the daily_notices gem'
       @rss.link = @url_base
     end    

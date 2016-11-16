@@ -79,7 +79,7 @@ class DailyNotices
 
     new_day() if @day != Time.now.day
 
-    if @dx.all.any? and @dx.all.last.description == CGI.unescape(description) then
+    if @dx.all.any? and @dx.all.first.description == CGI.unescape(description) then
 
       return :duplicate
 

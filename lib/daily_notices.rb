@@ -74,22 +74,18 @@ class DailyNotices
     @target_page = target_page
   end
   
-  def create(x, time=Time.now.strftime('%H:%M %p - %d %b %Y'), title: nil, \
-                                      id: Time.now.to_i.to_s, description: nil)
+  def create(description, time=Time.now.strftime('%H:%M %p - %d %b %Y'), \
+             title: nil, id: Time.now.to_i.to_s)
 
     new_day() if @day != Time.now.day
-        
-    if x.is_a? String then
 
-      description = x
-      @dx.create({description: description, time: time}, id: id)
+    if @dx.all.any? and @dx.all.last.description == CGI.unescape(description) then
 
-    elsif x.is_a? Hash
+      return :duplicate
 
-      @dx.create(x, id: id)
-      
     end
-    
+        
+    @dx.create({description: description, time: time}, id: id)    
     @dx.save @indexpath
     
     if @target_page == :recordset then
@@ -127,6 +123,8 @@ class DailyNotices
     @rss.save @rssfile
     
     on_add(@indexpath, id)
+    
+    return true
 
   end
   

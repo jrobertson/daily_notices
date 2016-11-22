@@ -102,7 +102,7 @@ class DailyNotices
       yield kvx if block_given? 
 
       rxdoc = Rexle.new(kvx.to_xml)
-      rxdoc.instructions  << ['xml-stylsheet',\
+      rxdoc.instructions  << ['xml-styelsheet',\
           "title='XSL_formatting' type='text/xsl' href='#{@target_xslt}'"]
       File.write target_path.sub(/\.html$/,'.xml', ), rxdoc.xml(pretty: true)
       

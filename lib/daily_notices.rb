@@ -14,8 +14,9 @@ class DailyNotices
   
   attr_accessor :title, :description, :link, :dx_xslt, :rss_xslt
 
-  def initialize(filepath='', url_base: 'http:/127.0.0.1/', identifier: '', \
-           dx_xslt: '', rss_xslt: '', target_page: :recordset, target_xslt: '')
+  def initialize(filepath='', url_base: 'http:/127.0.0.1/', identifier: '', 
+                        dx_xslt: '', rss_xslt: '', target_page: :recordset, 
+                        target_xslt: '', title: 'daily notices')
     
     @filepath, @url_base, @dx_xslt, @rss_xslt, @target_page, @target_xslt,  \
           @identifier = filepath, url_base, dx_xslt, rss_xslt, target_page, \
@@ -44,7 +45,7 @@ class DailyNotices
       dir = url_base[/http:\/\/[^\/]+\/(.*)/,1]
 
       rssxsltfilename = "rssx#{Time.now.to_i.to_s}.xsl"
-      rssxsltfilepath = '/' + [dir, subdir, rssxsltfilename].join('/')      
+      rssxsltfilepath = '/' + [dir, subdir, rssxsltfilename].join('/')
       File.write File.join(filepath, rssxsltfilename), \
                                              RssSliml.new().to_xslt
       
@@ -52,7 +53,7 @@ class DailyNotices
     end    
     
     @day = Time.now.day
-    @title = @identifier.capitalize + ' daily notices'
+    @title = title
     new_day()
     
     # open the Dynarex file or create a new Dynarex file
@@ -60,10 +61,12 @@ class DailyNotices
     @rssfile = File.join(@filepath, 'rss.xml')
 
     if File.exists? @rssfile then
-      @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt
+      @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt, 
+          custom_fields: ['topic']
     else
 
-      @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt
+      @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt, 
+          custom_fields: ['topic']
       @rss.xslt = @rss_xslt
       @rss.title = @title || identifier.capitalize + ' daily notices'
       @rss.description = 'Generated using the daily_notices gem'
@@ -74,18 +77,20 @@ class DailyNotices
     @target_page = target_page
   end
   
-  def create(description, time=Time.now.strftime('%H:%M %p - %d %b %Y'), \
-             title: nil, id: Time.now.to_i.to_s)
+  def create(h={time: Time.now.strftime('%H:%M %p - %d %b %Y'), title: nil}, id: Time.now.to_i.to_s)
 
+    
     new_day() if @day != Time.now.day
 
-    if @dx.all.any? and @dx.all.first.description == CGI.unescape(description) then
+    if @dx.all.any? and 
+        @dx.all.first.description == CGI.unescape(h[:description]) then
 
       return :duplicate
 
     end
         
-    @dx.create({description: description, time: time}, id: id)    
+    #@dx.create({description: description, time: time}, id: id)
+    @dx.create(h, id: id)        
     @dx.save @indexpath
     
     if @target_page == :recordset then
@@ -116,10 +121,10 @@ class DailyNotices
     end
 
     # Add it to the RSS document
-    title ||= description.split(/\n/,2).first[0..140]
+    title ||= h[:description].split(/\n/,2).first[0..140]
     link = create_link(id)
     
-    @rss.add( {title: title, link: link, description: description}, id: id)
+    @rss.add( {title: title, link: link}.merge(h), id: id)
     @rss.save @rssfile
     
     on_add(@indexpath, id)

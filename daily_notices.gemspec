@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'daily_notices'
-  s.version = '0.5.5'
+  s.version = '0.5.6'
   s.summary = 'A public facing noticeboard which is centered around an RSS feed.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/daily_notices.rb']
@@ -11,6 +11,6 @@ Gem::Specification.new do |s|
   s.signing_key = '../privatekeys/daily_notices.pem'
   s.cert_chain  = ['gem-public_cert.pem']
   s.license = 'MIT'
-  s.email = 'james@r0bertson.co.uk'
+  s.email = 'james@jamesrobertson.eu'
   s.homepage = 'https://github.com/jrobertson/daily_notices'
 end

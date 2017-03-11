@@ -23,7 +23,7 @@ class DailyNotices
           target_xslt, identifier
 
     
-    @schema ||= 'items[title, identifier]/item(description, time)'
+    @schema ||= 'items[title, identifier]/item(description, time, link)'
     @default_key ||= 'uid'
     
     if dx_xslt.nil? then
@@ -88,6 +88,8 @@ class DailyNotices
       return :duplicate
 
     end
+    
+    h[:link] ||= create_link(id)    
         
     #@dx.create({description: description, time: time}, id: id)
     @dx.create(h, id: id)        
@@ -121,10 +123,9 @@ class DailyNotices
     end
 
     # Add it to the RSS document
-    title ||= h[:description].split(/\n/,2).first[0..140]
-    link = create_link(id)
+    h[:title] ||= h[:description].split(/\n/,2).first[0..140]
     
-    @rss.add( {title: title, link: link}.merge(h), id: id)
+    @rss.add( h, id: id)
     @rss.save @rssfile
     
     on_add(@indexpath, id)

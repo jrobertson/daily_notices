@@ -92,7 +92,7 @@ class DailyNotices
     h[:link] ||= create_link(id)    
         
     #@dx.create({description: description, time: time}, id: id)
-    @dx.create(h, id: id)        
+    @dx.create(item: h, id: id)        
     @dx.save @indexpath
     
     if @target_page == :recordset then

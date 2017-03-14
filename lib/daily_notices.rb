@@ -77,9 +77,11 @@ class DailyNotices
     @target_page = target_page
   end
   
-  def create(h={time: Time.now.strftime('%H:%M %p - %d %b %Y'), title: nil}, id: Time.now.to_i.to_s)
+  def create(id: Time.now.to_i.to_s, 
+            item: {time: Time.now.strftime('%H:%M %p - %d %b %Y'), title: nil})  
 
-    
+    h = item
+
     new_day() if @day != Time.now.day
 
     if @dx.all.any? and 
@@ -88,11 +90,11 @@ class DailyNotices
       return :duplicate
 
     end
-    
+
     h[:link] ||= create_link(id)    
         
     #@dx.create({description: description, time: time}, id: id)
-    @dx.create(item: h, id: id)        
+    @dx.create(h, id: id)        
     @dx.save @indexpath
     
     if @target_page == :recordset then
@@ -125,7 +127,7 @@ class DailyNotices
     # Add it to the RSS document
     h[:title] ||= h[:description].split(/\n/,2).first[0..140]
     
-    @rss.add( h, id: id)
+    @rss.add(item: h, id: id)
     @rss.save @rssfile
     
     on_add(@indexpath, id)

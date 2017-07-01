@@ -185,7 +185,7 @@ class DailyNotices
   #
   def new_day()
     
-    @archive_path = Time.now.strftime("%Y/%b/%d").downcase
+    @archive_path = Time.now.strftime("%Y/%b/%-d").downcase
     
     @indexpath = File.join(@filepath, @archive_path, 'index.xml')
     FileUtils.mkdir_p File.dirname(@indexpath)

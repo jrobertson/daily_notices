@@ -92,6 +92,9 @@ class DailyNotices
     end
 
     h[:link] ||= create_link(id)    
+    h[:title] ||= h[:description]
+        .split(/\n/,2).first.gsub(/\<\/?\w+[^>]*>/,'')[0..140]
+    h[:time] ||= Time.now.strftime('%H:%M %p - %d %b %Y')    
         
     #@dx.create({description: description, time: time}, id: id)
     @dx.create(h, id: id)        
@@ -125,7 +128,7 @@ class DailyNotices
     end
 
     # Add it to the RSS document
-    h[:title] ||= h[:description].split(/\n/,2).first[0..140]
+
     
     @rss.add(item: h, id: id)
     @rss.save @rssfile

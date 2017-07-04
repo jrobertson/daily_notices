@@ -100,7 +100,7 @@ class DailyNotices
     @dx.create(h, id: id)        
     @dx.save @indexpath
     
-    render_files(id)
+    render_html_files(id)
 
     # Add it to the RSS document
 
@@ -125,7 +125,6 @@ class DailyNotices
     indexpath = File.join(@filepath, archive_path, id.to_s)    
 
     FileUtils.rm_rf indexpath    
-    render_html_files(id.to_s)
     
     id.to_s + ' deleted'
     

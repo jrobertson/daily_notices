@@ -85,7 +85,7 @@ class DailyNotices
     new_day() if @day != Time.now.day
 
     if @dx.all.any? and 
-        @dx.all.first.description == CGI.unescape(h[:description]) then
+        @dx.all.first.description == CGI.unescape(h[:description].to_s) then
 
       return :duplicate
 
@@ -100,32 +100,7 @@ class DailyNotices
     @dx.create(h, id: id)        
     @dx.save @indexpath
     
-    if @target_page == :recordset then
-      File.write  File.join(@filepath, @archive_path, 'index.html'), \
-                                                 @dx.to_html(domain: @url_base)
-    else
-
-      target_path = File.join(@filepath, @archive_path, id, 'index.html')
-      FileUtils.mkdir_p File.dirname(target_path)
-
-      rx = @dx.find(id)
-
-      kvx = rx.to_kvx
-      yield kvx if block_given? 
-
-      rxdoc = Rexle.new(kvx.to_xml)
-      rxdoc.instructions  << ['xml-styelsheet',\
-          "title='XSL_formatting' type='text/xsl' href='#{@target_xslt}'"]
-      File.write target_path.sub(/\.html$/,'.xml', ), rxdoc.xml(pretty: true)
-      
-      unless File.exists? @target_xslt then
-        File.write @target_xslt, 
-            RxSliml.new(fields: %i(description time)).to_xslt 
-      end
-      
-      File.write  target_path, rx.to_html(xslt: @target_xslt)
-
-    end
+    render_files(id)
 
     # Add it to the RSS document
 
@@ -140,6 +115,29 @@ class DailyNotices
   end
   
   alias add create
+  
+  
+  def delete(id)
+        
+    [@dx, @rss].each {|x| x.delete(id.to_s); x.save}
+
+    archive_path = Time.at(id.to_i).strftime("%Y/%b/%-d").downcase
+    indexpath = File.join(@filepath, archive_path, id.to_s)    
+
+    FileUtils.rm_rf indexpath    
+    render_html_files(id.to_s)
+    
+    id.to_s + ' deleted'
+    
+  end
+  
+  def description()
+    @rss.description
+  end
+  
+  def description=(val)
+    @rss.description = val
+  end  
   
   def title()
     @rss.title
@@ -156,14 +154,7 @@ class DailyNotices
   def link=(val)
     @rss.link = val
   end
-  
-  def description()
-    @rss.description
-  end
-  
-  def description=(val)
-    @rss.description = val
-  end
+
   
   # If you wish override this method or use it in block form to add a  
   #  notifier, callback routine or webhook, whenever a new record is added.
@@ -176,6 +167,10 @@ class DailyNotices
   
   def save()
     @rss.save @rssfile    
+  end
+  
+  def to_dx()
+    Dynarex.new @dx.to_xml
   end
   
   private 
@@ -205,6 +200,38 @@ class DailyNotices
       @dx.identifier = @identifier
     end    
     
+  end
+  
+  def render_html_files(id)
+    
+    if @target_page == :recordset then
+      File.write  File.join(@filepath, @archive_path, 'index.html'), \
+                                                 @dx.to_html(domain: @url_base)
+    else
+
+      target_path = File.join(@filepath, @archive_path, id, 'index.html')
+      FileUtils.mkdir_p File.dirname(target_path)
+
+      rx = @dx.find(id)
+
+      kvx = rx.to_kvx
+      yield kvx if block_given? 
+
+      rxdoc = Rexle.new(kvx.to_xml)
+      rxdoc.instructions  << ['xml-styelsheet',\
+          "title='XSL_formatting' type='text/xsl' href='#{@target_xslt}'"]
+      File.write target_path.sub(/\.html$/,'.xml', ), rxdoc.xml(pretty: true)
+      
+      unless File.exists? @target_xslt then
+
+        File.write @target_xslt, 
+            RxSliml.new(fields: %i(description time)).to_xslt
+      end
+      
+      File.write  target_path, rx.to_html(xslt: @target_xslt)
+
+    end    
+
   end
   
 end

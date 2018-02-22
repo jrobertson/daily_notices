@@ -9,18 +9,17 @@ require 'fileutils'
 require 'rss_creator'
 
 
-
 class DailyNotices
   
   attr_accessor :title, :description, :link, :dx_xslt, :rss_xslt
 
   def initialize(filepath='', url_base: 'http:/127.0.0.1/', identifier: '', 
                         dx_xslt: '', rss_xslt: '', target_page: :recordset, 
-                        target_xslt: '', title: 'daily notices')
+                        target_xslt: '', title: 'daily notices', log: nil)
     
     @filepath, @url_base, @dx_xslt, @rss_xslt, @target_page, @target_xslt,  \
-          @identifier = filepath, url_base, dx_xslt, rss_xslt, target_page, \
-          target_xslt, identifier
+          @identifier, @log = filepath, url_base, dx_xslt, rss_xslt, \
+          target_page, target_xslt, identifier, log
 
     
     @schema ||= 'items[title, identifier]/item(title, description, time, link)'
@@ -78,8 +77,9 @@ class DailyNotices
   end
   
   def create(id: Time.now.to_i.to_s, 
-            item: {time: Time.now.strftime('%H:%M %p - %d %b %Y'), title: nil})  
+            item: {time: Time.now.strftime('%H:%M %p - %d %b %Y'), title: nil})
 
+    @log.info 'daily_notices/create: item: ' + item.inspect if @log
     h = item
 
     new_day() if @day != Time.now.day

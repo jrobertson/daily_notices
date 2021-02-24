@@ -15,11 +15,12 @@ class DailyNotices
 
   def initialize(filepath='', url_base: 'http:/127.0.0.1/', identifier: '', 
                         dx_xslt: '', rss_xslt: '', target_page: :recordset, 
-                        target_xslt: '', title: 'daily notices', log: nil)
+                        target_xslt: '', title: 'daily notices', log: nil, 
+                        debug: false)
     
     @filepath, @url_base, @dx_xslt, @rss_xslt, @target_page, @target_xslt,  \
-          @identifier, @log = filepath, url_base, dx_xslt, rss_xslt, \
-          target_page, target_xslt, identifier, log
+          @identifier, @log, @debug = filepath, url_base, dx_xslt, rss_xslt, \
+          target_page, target_xslt, identifier, log, debug
 
     
     @schema ||= 'items[title, identifier]/item(title, description, time, link)'
@@ -97,7 +98,9 @@ class DailyNotices
     h[:time] ||= Time.now.strftime('%H:%M %p - %d %b %Y')    
 
     #@dx.create({description: description, time: time}, id: id)
+    puts 'before @dx.create' if @debug
     @dx.create(h, id: id)        
+    puts 'after @dx.create' if @debug
     @dx.save @indexpath
     
     render_html_files(id)
@@ -136,6 +139,12 @@ class DailyNotices
   
   def description=(val)
     @rss.description = val
+  end
+
+  def image=(val)
+    image_url, target_url = val.split
+    @rss.image_url = image_url
+    @rss.image_target_url = target_url
   end  
   
   def title()
@@ -182,6 +191,8 @@ class DailyNotices
   #
   def new_day()
     
+    puts 'inside new_day' if @debug
+    
     @archive_path = Time.now.strftime("%Y/%b/%-d").downcase
     
     @indexpath = File.join(@filepath, @archive_path, 'index.xml')
@@ -191,7 +202,9 @@ class DailyNotices
     if File.exists? @indexpath then
       @dx = Dynarex.new @indexpath
     else
-      @dx = Dynarex.new @schema
+      
+      puts 'creating a new dx file' if @debug
+      @dx = Dynarex.new @schema, debug: @debug
       @dx.order = 'descending'
       @dx.default_key = @default_key
       @dx.xslt = @dx_xslt
@@ -199,9 +212,11 @@ class DailyNotices
       @dx.identifier = @identifier
     end    
     
-  end
+   end
   
   def render_html_files(id)
+    
+    puts 'inside render_html_files' if @debug
     
     if @target_page == :recordset then
       File.write  File.join(@filepath, @archive_path, 'index.html'), \
@@ -213,10 +228,16 @@ class DailyNotices
 
       rx = @dx.find(id)
 
+      puts 'rx: ' + rx.inspect if @debug
       kvx = rx.to_kvx
+      
       yield kvx if block_given? 
-
+      puts 'before kvx.to_xml' if @debug
+      puts 'kvx.to_xml : ' + kvx.to_xml.inspect
+      puts 'before 2 kvx.to_xml' if @debug
       rxdoc = Rexle.new(kvx.to_xml)
+      puts 'after kvx.to_xml' if @debug
+      
       rxdoc.instructions  << ['xml-styelsheet',\
           "title='XSL_formatting' type='text/xsl' href='#{@target_xslt}'"]
       File.write target_path.sub(/\.html$/,'.xml', ), rxdoc.xml(pretty: true)

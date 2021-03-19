@@ -23,7 +23,10 @@ class DailyNotices
           target_page, target_xslt, identifier, log, debug
 
     
-    @schema ||= 'items[title, identifier]/item(title, description, time, link)'
+    # note: card is intended for storing meta data in JSON format
+    
+    @schema ||= 'items[title, identifier, image]/item(title, description, ' +
+        'card, time, link)'
     @default_key ||= 'uid'
     
     if dx_xslt.nil? then
@@ -95,7 +98,7 @@ class DailyNotices
     h[:link] ||= create_link(id)    
     h[:title] ||= h[:description]
         .split(/\n/,2).first.gsub(/\<\/?\w+[^>]*>/,'')[0..140]
-    h[:time] ||= Time.now.strftime('%H:%M %p - %d %b %Y')    
+    h[:time] ||= Time.now.strftime('%H:%M %p · %b %d %Y')    
 
     #@dx.create({description: description, time: time}, id: id)
     puts 'before @dx.create' if @debug

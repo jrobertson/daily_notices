@@ -66,11 +66,12 @@ class DailyNotices
 
     if FileX.exists? @rssfile then
       @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt,
-          custom_fields: ['topic']
+          custom_fields: ['topic'], log: @log
     else
 
       @rss = RSScreator.new @rssfile, dx_xslt: @rss_xslt,
-          custom_fields: ['topic']
+          custom_fields: ['topic'], log: @log
+
       @rss.xslt = @rss_xslt
       @rss.title = @title || identifier.capitalize + ' daily notices'
       @rss.description = 'Generated using the daily_notices gem'
@@ -105,13 +106,15 @@ class DailyNotices
 
     #@dx.create({description: description, time: time}, id: id)
     puts 'before @dx.create' if @debug
+    @log.info 'daily_notices/create: before' if @log
 
     # deep clone the Hash object
     h3 = Marshal.load( Marshal.dump(h) )
     h[:card] = h[:card].to_json if h[:card] and h[:card].is_a? Hash
 
     @dx.create(h, id: id)
-    puts 'after @dx.create' if @debug
+    @log.info 'daily_notices/create: after' if @log
+    #puts 'after @dx.create' if @debug
 
     @dx.save @indexpath
 
@@ -134,6 +137,7 @@ class DailyNotices
 
     end
 
+    @log.debug 'daily_notices/create: h3: ' + h3.inspect if @log
     @rss.add(item: h3, id: id)
     @rss.save @rssfile
     # open up the RSS file and fill in the title and description fields

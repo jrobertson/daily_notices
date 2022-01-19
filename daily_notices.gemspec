@@ -1,11 +1,11 @@
 Gem::Specification.new do |s|
   s.name = 'daily_notices'
-  s.version = '0.7.2'
+  s.version = '0.7.3'
   s.summary = 'A public facing noticeboard which is centered around an ' + 
       'RSS feed.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/daily_notices.rb']
-  s.add_runtime_dependency('rss_creator', '~> 0.5', '>=0.5.0')
+  s.add_runtime_dependency('rss_creator', '~> 0.5', '>=0.5.1')
   s.add_runtime_dependency('dx_sliml', '~> 0.1', '>=0.1.8')
   s.add_runtime_dependency('rx_sliml', '~> 0.2', '>=0.2.1')
   s.add_runtime_dependency('rss_sliml', '~> 0.2', '>=0.2.0')

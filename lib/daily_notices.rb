@@ -5,12 +5,12 @@
 
 require 'dx_sliml'
 require 'rx_sliml'
-require 'fileutils'
 require 'rss_creator'
+require 'rxfreadwrite'
 
 
 class DailyNotices
-  include RXFHelperModule
+  include RXFReadWriteModule
 
   attr_accessor :title, :description, :link, :dx_xslt, :rss_xslt
 
@@ -158,7 +158,7 @@ class DailyNotices
     archive_path = Time.at(id.to_i).strftime("%Y/%b/%-d").downcase
     indexpath = File.join(@filepath, archive_path, id.to_s)
 
-    FileUtils.rm_rf indexpath
+    FileX.rm_rf indexpath
 
     id.to_s + ' deleted'
 
